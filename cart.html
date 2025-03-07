@@ -35,18 +35,17 @@
             vegetables.forEach(veg => {
                 storeDiv.innerHTML += `<div class='item'>
                     <span>${veg.name} - $${veg.price}</span>
-                    <button onclick="addToCart(${veg.id}, '${veg.name}', ${veg.price})">Add to Cart</button>
+                    <button onclick="addToCart(${veg.id})">Add to Cart</button>
                 </div>`;
             });
         }
         
-        async function addToCart(id, name, price) {
+        async function addToCart(vegId) {
             let response = await fetch(`${API_URL}/cart/`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ vegetable_id: id })
+                body: JSON.stringify({ vegetable_id: vegId })
             });
-            let newItem = await response.json();
             updateCart();
         }
         
@@ -67,8 +66,8 @@
             totalSpan.innerText = total;
         }
         
-        async function removeFromCart(id) {
-            await fetch(`${API_URL}/cart/${id}/remove/`, { method: 'DELETE' });
+        async function removeFromCart(itemId) {
+            await fetch(`${API_URL}/cart/${itemId}/remove/`, { method: 'DELETE' });
             updateCart();
         }
         
