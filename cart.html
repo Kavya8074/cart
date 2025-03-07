@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vegetable Cart</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; }
+        .container { width: 50%; margin: auto; }
+        .item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #ddd; }
+        .cart { margin-top: 20px; }
+        button { cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Vegetable Cart</h1>
+    <div class="container">
+        <h2>Available Vegetables</h2>
+        <div class="store" id="store"></div>
+        
+        <h2>Shopping Cart</h2>
+        <div class="cart" id="cart"></div>
+        <h3>Total: $<span id="total">0</span></h3>
+    </div>
+    
+    <script>
+        const API_URL = "https://your-backend-url.onrender.com/api";
+        let cart = [];
+
+        async function fetchVegetables() {
+            let response = await fetch(`${API_URL}/vegetables/`);
+            let vegetables = await response.json();
+            let storeDiv = document.getElementById('store');
+            storeDiv.innerHTML = '';
+            vegetables.forEach(veg => {
+                storeDiv.innerHTML += `<div class='item'>
+                    <span>${veg.name} - $${veg.price}</span>
+                    <button onclick="addToCart(${veg.id}, '${veg.name}', ${veg.price})">Add to Cart</button>
+                </div>`;
+            });
+        }
+        
+        async function addToCart(id, name, price) {
+            let response = await fetch(`${API_URL}/cart/`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ vegetable_id: id })
+            });
+            let newItem = await response.json();
+            updateCart();
+        }
+        
+        async function updateCart() {
+            let response = await fetch(`${API_URL}/cart/`);
+            let cartItems = await response.json();
+            let cartDiv = document.getElementById('cart');
+            let totalSpan = document.getElementById('total');
+            cartDiv.innerHTML = '';
+            let total = 0;
+            cartItems.forEach(item => {
+                total += item.vegetable.price * item.quantity;
+                cartDiv.innerHTML += `<div class='item'>
+                    <span>${item.vegetable.name} (x${item.quantity}) - $${item.vegetable.price * item.quantity}</span>
+                    <button onclick="removeFromCart(${item.id})">Remove</button>
+                </div>`;
+            });
+            totalSpan.innerText = total;
+        }
+        
+        async function removeFromCart(id) {
+            await fetch(`${API_URL}/cart/${id}/remove/`, { method: 'DELETE' });
+            updateCart();
+        }
+        
+        fetchVegetables();
+        updateCart();
+    </script>
+</body>
+</html>
